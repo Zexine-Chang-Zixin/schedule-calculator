@@ -1,3 +1,4 @@
+# 需求1：课表读取与文本视图
 import csv
 
 def load_schedule_from_csv(file_path):
