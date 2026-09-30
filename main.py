@@ -69,17 +69,14 @@ def get_person_free_slots(person_schedule, day, day_start_min, day_end_min):
     
     return free_slots
 
-def print_all_free_times(schedule_list, day_start="08:00", day_end="22:00"):
+def print_all_free_times(people_list, schedule_list, day_start="08:00", day_end="22:00"):
     """打印每个人的空闲时间段"""
     print("===== 【所有人的空闲时间段】 =====")
     day_start_min = time_to_minutes(day_start)
     day_end_min = time_to_minutes(day_end)
     days = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
     
-    # 按人分组
-    people = list(set([c['person'] for c in schedule_list]))
-    
-    for person in people:
+    for person in people_list:
         print(f"--- {person} 的空闲时间 ---")
         person_schedule = [c for c in schedule_list if c['person'] == person]
         for day in days:
@@ -90,19 +87,17 @@ def print_all_free_times(schedule_list, day_start="08:00", day_end="22:00"):
     print("===============================\n")
 
 # ================= 需求3：找共同空闲时间 =================
-def find_common_free_times(all_schedules, day_start="08:00", day_end="22:00"):
+def find_common_free_times(people_list, all_schedules, day_start="08:00", day_end="22:00"):
     """找所有人的共同空闲时间，并按空闲时长排序（超长超赞）"""
     print("===== 【所有人共有的空闲时间段】 =====")
     day_start_min = time_to_minutes(day_start)
     day_end_min = time_to_minutes(day_end)
     days = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
     
-    people = list(set([c['person'] for c in all_schedules]))
-    
     for day in days:
         # 提取每个人当天的空闲时间
         all_free_slots = []
-        for person in people:
+        for person in people_list:
             person_schedule = [c for c in all_schedules if c['person'] == person]
             slots = get_person_free_slots(person_schedule, day, day_start_min, day_end_min)
             if not slots:
@@ -139,6 +134,9 @@ def find_common_free_times(all_schedules, day_start="08:00", day_end="22:00"):
 def main():
     print("欢迎使用课表解析工具！")
     
+    # 显式定义所有人的名单（这步极其重要，防止某人没课时被忽略）
+    people_list = ["同学A", "同学B"]
+    
     # 读取多个人的课表
     schedule_A = load_schedule_from_csv("schedule.csv", "同学A")
     schedule_B = load_schedule_from_csv("schedule_B.csv", "同学B")
@@ -150,10 +148,10 @@ def main():
     print_schedule_view(all_schedules)
     
     # 需求2：计算每个人的空闲时间
-    print_all_free_times(all_schedules)
+    print_all_free_times(people_list, all_schedules)
     
     # 需求3：计算共同空闲时间
-    find_common_free_times(all_schedules)
+    find_common_free_times(people_list, all_schedules)
 
 if __name__ == "__main__":
     main()
