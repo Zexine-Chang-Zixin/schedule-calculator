@@ -88,6 +88,52 @@ def print_all_free_times(schedule_list, day_start="08:00", day_end="22:00"):
                 print(f"[{day}] 空闲: {', '.join(slot_strs)}")
     print("===============================\n")
 
+# ================= 需求3：找共同空闲时间 =================
+def find_common_free_times(all_schedules, day_start="08:00", day_end="22:00"):
+    """找所有人的共同空闲时间，并按空闲时长排序（超长超赞）"""
+    print("===== 【所有人共有的空闲时间段】 =====")
+    day_start_min = time_to_minutes(day_start)
+    day_end_min = time_to_minutes(day_end)
+    days = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+    
+    people = list(set([c['person'] for c in all_schedules]))
+    
+    for day in days:
+        # 提取每个人当天的空闲时间
+        all_free_slots = []
+        for person in people:
+            person_schedule = [c for c in all_schedules if c['person'] == person]
+            slots = get_person_free_slots(person_schedule, day, day_start_min, day_end_min)
+            if not slots:
+                all_free_slots = [] 
+                break
+            all_free_slots.append(slots)
+        
+        if not all_free_slots:
+            print(f"[{day}] 无共同空闲时间")
+            continue
+        
+        # 求交集 (两个两个求交集)
+        common_slots = all_free_slots[0]
+        for i in range(1, len(all_free_slots)):
+            new_common = []
+            for c_start, c_end in common_slots:
+                for p_start, p_end in all_free_slots[i]:
+                    overlap_start = max(c_start, p_start)
+                    overlap_end = min(c_end, p_end)
+                    # 共同空闲也要大于30分钟
+                    if overlap_end - overlap_start >= 30:
+                        new_common.append((overlap_start, overlap_end))
+            common_slots = new_common
+        
+        # 按空闲时长从大到小排序（超长超赞排序）
+        common_slots.sort(key=lambda x: x[1] - x[0], reverse=True)
+        
+        # 输出
+        result_strs = [f"{minutes_to_time(s)} - {minutes_to_time(e)} ({e-s}分钟)" for s, e in common_slots]
+        print(f"[{day}] 共同空闲: {', '.join(result_strs) if result_strs else '无'}")
+    print("===============================\n")
+
 # ================= 主程序 =================
 def main():
     print("欢迎使用课表解析工具！")
@@ -104,6 +150,9 @@ def main():
     
     # 需求2：计算每个人的空闲时间
     print_all_free_times(all_schedules)
+    
+    # 需求3：计算共同空闲时间
+    find_common_free_times(all_schedules)
 
 if __name__ == "__main__":
     main()
